@@ -70,7 +70,7 @@ TEST_F(TransferFunctionTest, LowPass)
   ASSERT_TRUE(
     filter->configure(
       channels, "dummy.prefix", "LowPass",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
 
   std::vector<double> in1, in2, in3, in4, in5, in6, in7;
@@ -107,7 +107,7 @@ TEST_F(TransferFunctionTest, SingleLowPass)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "LowPassSingle",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
 
   double in1, in2, in3, in4, in5, in6, in7;
@@ -146,7 +146,7 @@ TEST_F(TransferFunctionTest, LowPassNonUnity)
   ASSERT_TRUE(
     filter->configure(
       channels, "dummy.prefix", "LowPassNonUnity",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   std::vector<double> in1, in2, in3, in4, in5, in6, in7;
   std::vector<double> out1;
@@ -183,7 +183,7 @@ TEST_F(TransferFunctionTest, LowPassMulti)
   ASSERT_TRUE(
     filter->configure(
       channels, "dummy.prefix", "LowPassMulti",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   std::vector<double> in1, in2, in3, in4, in5, in6, in7;
   std::vector<double> out1;
@@ -245,7 +245,7 @@ TEST_F(TransferFunctionTest, LowPassIrrational)
   ASSERT_TRUE(
     filter->configure(
       channels, "dummy.prefix", "LowPassIrrational",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   std::vector<double> in1, in2, in3, in4, in5, in6, in7;
   std::vector<double> out1;

@@ -65,7 +65,7 @@ TEST_F(MedianFilterTest, MultiChannelDoubleConfirmIdentityNRows)
   ASSERT_TRUE(
     filter->configure(
       rows, "dummy.prefix", "MultiChannelMedianFilterDouble5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   double input1[] = {1., 2., 3., 4., 5.};
   double input1a[] = {11., 12., 13., 14., 15.};
@@ -92,7 +92,7 @@ TEST_F(MedianFilterTest, MultiChannelDoubleThreeRows)
   ASSERT_TRUE(
     filter->configure(
       rows, "dummy.prefix", "MultiChannelMedianFilterDouble5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   double input1[] = {0., 1., 2., 3., 4.};
   std::vector<double> v1(input1, input1 + sizeof(input1) / sizeof(double));
@@ -123,7 +123,7 @@ TEST_F(MedianFilterTest, MultiChannelFloatConfirmIdentityNRows)
   ASSERT_TRUE(
     filter->configure(
       rows, "dummy.prefix", "MultiChannelMedianFilterFloat5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   float input1[] = {1., 2., 3., 4., 5.};
   float input1a[] = {1., 2., 3., 4., 5.};
@@ -150,7 +150,7 @@ TEST_F(MedianFilterTest, MultiChannelFloatThreeRows)
   ASSERT_TRUE(
     filter->configure(
       rows, "dummy.prefix", "MultiChannelMedianFilterFloat5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   float input1[] = {0., 1., 2., 3., 4.};
   std::vector<float> v1(input1, input1 + sizeof(input1) / sizeof(float));

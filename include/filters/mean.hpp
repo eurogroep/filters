@@ -89,7 +89,7 @@ bool MeanFilter<T>::configure()
 {
   if (!FilterBase<T>::getParam("number_of_observations", number_of_observations_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "MeanFilter did not find param number_of_observations");
     return false;
   }
@@ -175,7 +175,7 @@ bool MultiChannelMeanFilter<T>::configure()
 {
   if (!FilterBase<T>::getParam("number_of_observations", number_of_observations_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "MultiChannelMeanFilter did not find param number_of_observations");
     return false;
   }
@@ -191,7 +191,7 @@ bool MultiChannelMeanFilter<T>::update(const std::vector<T> & data_in, std::vect
 {
   if (data_in.size() != number_of_channels_ || data_out.size() != number_of_channels_) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "Configured with wrong size config: %ld, in: %ld out: %ld",
       number_of_channels_, data_in.size(), data_out.size());
     return false;

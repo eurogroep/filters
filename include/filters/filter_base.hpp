@@ -82,25 +82,20 @@ public:
   bool configure(
     const std::string & param_prefix,
     const std::string & filter_name,
-    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logger,
-    const rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node_params)
+    const rclcpp::Node::SharedPtr & node)
   {
+    node_ = node;
     if (configured_) {
       RCLCPP_WARN(
-        node_logger->get_logger(),
+        node->get_logger(),
         "Filter %s already being reconfigured",
         filter_name_.c_str());
-    }
-    if (!node_params) {
-      throw std::runtime_error("Need a parameters interface to function.");
     }
 
     configured_ = false;
 
     filter_name_ = filter_name;
     param_prefix_ = impl::normalize_param_prefix(param_prefix);
-    params_interface_ = node_params;
-    logging_interface_ = node_logger;
 
     configured_ = configure();
     return configured_;
@@ -125,7 +120,7 @@ private:
   {
     std::string param_name = param_prefix_ + name;
 
-    if (!params_interface_->has_parameter(param_name)) {
+    if (!node_->has_parameter(param_name)) {
       // Declare parameter
       rclcpp::ParameterValue default_parameter_value(default_value);
       rcl_interfaces::msg::ParameterDescriptor desc;
@@ -137,10 +132,10 @@ private:
         throw std::runtime_error("Parameter must have a name");
       }
 
-      params_interface_->declare_parameter(param_name, default_parameter_value, desc);
+      node_->declare_parameter(param_name, default_parameter_value, desc);
     }
 
-    value_out = params_interface_->get_parameter(param_name).get_parameter_value().get<PT>();
+    value_out = node_->get_parameter(param_name).get_parameter_value().get<PT>();
     // TODO(sloretz) seems to be no way to tell if parameter was initialized or not
     return true;
   }
@@ -258,8 +253,7 @@ protected:
 
   std::string param_prefix_;
 
-  rclcpp::node_interfaces::NodeParametersInterface::SharedPtr params_interface_;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
+  rclcpp::Node::SharedPtr node_;
 };
 
 
@@ -287,12 +281,11 @@ public:
     size_t number_of_channels,
     const std::string & param_prefix,
     const std::string & filter_name,
-    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logger,
-    const rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node_params)
+    const rclcpp::Node::SharedPtr & node)
   {
     number_of_channels_ = number_of_channels;
 
-    return FilterBase<T>::configure(param_prefix, filter_name, node_logger, node_params);
+    return FilterBase<T>::configure(param_prefix, filter_name, node);
   }
 
   /**
@@ -306,7 +299,7 @@ public:
   virtual bool update(const T & /*data_in*/, T & /*data_out*/)
   {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "THIS IS A MULTI FILTER DON'T CALL SINGLE FORM OF UPDATE");
     return false;
   }

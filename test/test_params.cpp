@@ -68,7 +68,7 @@ TEST_F(ParametersTest, Double)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "TestDouble",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
   double out;
   filter->update(out, out);
   EXPECT_NEAR(4, out, epsilon);
@@ -82,7 +82,7 @@ TEST_F(ParametersTest, Int)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "TestInt",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
   int out;
   filter->update(out, out);
   EXPECT_EQ(4, out);
@@ -96,7 +96,7 @@ TEST_F(ParametersTest, UInt)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "TestUInt",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
   unsigned int out;
   filter->update(out, out);
   EXPECT_EQ(4u, out);
@@ -110,7 +110,7 @@ TEST_F(ParametersTest, String)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "TestString",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
   std::string out;
   filter->update(out, out);
   EXPECT_STREQ("four", out.c_str());
@@ -126,7 +126,7 @@ TEST_F(ParametersTest, DoubleVector)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "TestDoubleVector",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
   std::vector<double> out;
   filter->update(out, out);
   for (std::vector<double>::iterator it = out.begin(); it != out.end(); ++it) {
@@ -142,7 +142,7 @@ TEST_F(ParametersTest, StringVector)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "TestStringVector",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
   std::vector<std::string> out;
   filter->update(out, out);
   for (std::vector<std::string>::iterator it = out.begin(); it != out.end(); ++it) {
