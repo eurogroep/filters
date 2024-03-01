@@ -141,16 +141,6 @@ load_chain_config(
     // Seems ok; store it for now; it will be loaded further down.
     found_filter.param_prefix = norm_param_prefix + filter_n + ".params";
     found_filters.push_back(found_filter);
-
-    // Redeclare 'name' and 'type' as read_only
-    node->undeclare_parameter(name_desc.name);
-    node->undeclare_parameter(type_desc.name);
-    name_desc.read_only = true;
-    type_desc.read_only = true;
-    node->declare_parameter(
-      name_desc.name, rclcpp::ParameterValue(found_filter.name), name_desc);
-    node->declare_parameter(
-      type_desc.name, rclcpp::ParameterValue(found_filter.type), type_desc);
   }
   return true;
 }
@@ -247,7 +237,6 @@ public:
       // Assume load_chain_config() console logged something sensible
       return false;
     }
-
     std::vector<pluginlib::UniquePtr<filters::FilterBase<T>>> loaded_filters;
     for (const auto & filter : found_filters) {
       // Try to load the filters that were described by parameters
@@ -265,7 +254,6 @@ public:
           "Could not construct class %s: %s", filter.type.c_str(), e.what());
         return false;
       }
-
       // Try to configure the filter
       if (!loaded_filter || !loaded_filter->configure(
           filter.param_prefix, filter.name, node_))
@@ -277,12 +265,40 @@ public:
       }
       loaded_filters.emplace_back(std::move(loaded_filter));
     }
-
     // Everything went ok!
     reference_pointers_ = std::move(loaded_filters);
+    on_set_parameters_callback_handle_ = node_->add_on_set_parameters_callback(
+             std::bind(&FilterChain::reconfigureCB, this, std::placeholders::_1));
     configured_ = true;
     return true;
   }
+
+  rcl_interfaces::msg::SetParametersResult reconfigureCB(std::vector<rclcpp::Parameter> parameters)
+  {
+    auto result = rcl_interfaces::msg::SetParametersResult();
+    result.successful = true;
+
+    for(int i=0; i!=reference_pointers_.size(); i++)
+    {
+      std::vector<rclcpp::Parameter> parameters_subset;
+      for(auto parameter : parameters)
+      {
+         if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) != std::string::npos) 
+         {
+          parameters_subset.push_back(parameter);
+         }
+      }
+      if(parameters_subset.size()>0)
+      {
+        if(!reference_pointers_[i]->reconfigureCB(parameters_subset).successful)
+        {
+          result.successful = false;
+        }
+      }
+    }
+    return result;
+  }
+
 
 private:
   pluginlib::ClassLoader<filters::FilterBase<T>> loader_;
@@ -295,6 +311,7 @@ private:
   bool configured_;  ///< whether the system is configured
 
   rclcpp::Node::SharedPtr node_;
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr on_set_parameters_callback_handle_;
 };
 
 /**
@@ -431,6 +448,33 @@ public:
     buffer1_.resize(number_of_channels);
     configured_ = true;
     return true;
+  }
+
+  rcl_interfaces::msg::SetParametersResult reconfigureCB(std::vector<rclcpp::Parameter> parameters)
+  {
+    auto result = rcl_interfaces::msg::SetParametersResult();
+    result.successful = true;
+
+    for(int i=0; i!=reference_pointers_.size(); i++)
+    {
+      std::vector<rclcpp::Parameter> parameters_subset;
+      for(auto parameter : parameters)
+      {
+        RCLCPP_WARN_STREAM(node_->get_logger(), "SETTING PARAMETER "<<parameter.get_name());
+        if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) != std::string::npos) 
+        {
+          parameters_subset.push_back(parameter);
+        }
+      }
+      if(parameters_subset.size()>0)
+      {
+        if(!reference_pointers_[i]->reconfigureCB(parameters_subset).successful)
+        {
+          result.successful = false;
+        }
+      }
+    }
+    return result;
   }
 
 private:

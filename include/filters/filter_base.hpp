@@ -109,32 +109,41 @@ public:
    */
   virtual bool update(const T & data_in, T & data_out) = 0;
 
+  virtual rcl_interfaces::msg::SetParametersResult reconfigureCB(std::vector<rclcpp::Parameter> parameters) 
+  {
+    auto result = rcl_interfaces::msg::SetParametersResult();
+    result.successful = true;
+    return result;
+  };
+
   /**
    * \brief Get the name of the filter as a string
    */
   inline const std::string & getName() {return filter_name_;}
+
+  /**
+   * \brief Get the parameter_prefix of the filter as a string
+   */
+  inline const std::string & getParamPrefix() {return param_prefix_;}
+
 
 private:
   template<typename PT>
   bool getParamImpl(const std::string & name, const uint8_t type, PT default_value, PT & value_out)
   {
     std::string param_name = param_prefix_ + name;
-
     if (!node_->has_parameter(param_name)) {
       // Declare parameter
       rclcpp::ParameterValue default_parameter_value(default_value);
       rcl_interfaces::msg::ParameterDescriptor desc;
       desc.name = name;
       desc.type = type;
-      desc.read_only = true;
-
+      desc.read_only = false;
       if (name.empty()) {
         throw std::runtime_error("Parameter must have a name");
       }
-
       node_->declare_parameter(param_name, default_parameter_value, desc);
     }
-
     value_out = node_->get_parameter(param_name).get_parameter_value().get<PT>();
     // TODO(sloretz) seems to be no way to tell if parameter was initialized or not
     return true;
