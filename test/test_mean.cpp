@@ -67,7 +67,7 @@ TEST_F(MeanFilterTest, MultiChannelConfirmIdentityNRows)
   ASSERT_TRUE(
     filter->configure(
       rows, "dummy.prefix", "MultiChannelMeanFilterDouble5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   double input1[] = {1., 2., 3., 4., 5.};
   double input1a[] = {1., 2., 3., 4., 5.};
@@ -94,7 +94,7 @@ TEST_F(MeanFilterTest, MultiChannelThreeRows)
   ASSERT_TRUE(
     filter->configure(
       rows, "dummy.prefix", "MultiChannelMeanFilterDouble5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   double input1[] = {0., 1., 2., 3., 4.};
   std::vector<double> v1(input1, input1 + sizeof(input1) / sizeof(double));
@@ -123,7 +123,7 @@ TEST_F(MeanFilterTest, ConfirmIdentityNRows)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "MeanFilterDouble5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   double input = 1.;
   double output = 0.;
@@ -141,7 +141,7 @@ TEST_F(MeanFilterTest, ThreeRows)
   ASSERT_TRUE(
     filter->configure(
       "dummy.prefix", "MeanFilterDouble5",
-      node_->get_node_logging_interface(), node_->get_node_parameters_interface()));
+      node_));
 
   double input1 = 0.;
   double input2 = 1.;

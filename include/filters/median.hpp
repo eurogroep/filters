@@ -142,7 +142,7 @@ template<typename T>
 bool MedianFilter<T>::configure()
 {
   if (!FilterBase<T>::getParam("number_of_observations", number_of_observations_)) {
-    RCLCPP_ERROR(this->logging_interface_->get_logger(), "MedianFilter was not given params.\n");
+    RCLCPP_ERROR(this->node_->get_logger(), "MedianFilter was not given params.\n");
     return false;
   }
 
@@ -222,7 +222,7 @@ bool MultiChannelMedianFilter<T>::configure()
 {
   if (!FilterBase<T>::getParam("number_of_observations", number_of_observations_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(), "MultiChannelMedianFilter was not given params.\n");
+      this->node_->get_logger(), "MultiChannelMedianFilter was not given params.\n");
     return false;
   }
 

@@ -119,7 +119,7 @@ bool SingleChannelTransferFunctionFilter<T>::configure()
   // Parse a and b into a std::vector<double>.
   if (!FilterBase<T>::getParam("a", a_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "TransferFunctionFilter, \"%s\", params has no attribute a.",
       FilterBase<T>::getName().c_str());
     return false;
@@ -128,7 +128,7 @@ bool SingleChannelTransferFunctionFilter<T>::configure()
 
   if (!FilterBase<T>::getParam("b", b_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "TransferFunctionFilter, \"%s\", params has no attribute b.",
       FilterBase<T>::getName().c_str());
     return false;
@@ -140,7 +140,7 @@ bool SingleChannelTransferFunctionFilter<T>::configure()
 
   // Prevent divide by zero while normalizing coeffs.
   if (a_[0] == 0.) {
-    RCLCPP_ERROR(this->logging_interface_->get_logger(), "a[0] can not equal 0.");
+    RCLCPP_ERROR(this->node_->get_logger(), "a[0] can not equal 0.");
     return false;
   }
 
@@ -263,7 +263,7 @@ bool MultiChannelTransferFunctionFilter<T>::configure()
   // Parse a and b into a std::vector<double>.
   if (!FilterBase<T>::getParam("a", a_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "TransferFunctionFilter, \"%s\", params has no attribute a.",
       FilterBase<T>::getName().c_str());
     return false;
@@ -271,7 +271,7 @@ bool MultiChannelTransferFunctionFilter<T>::configure()
 
   if (!FilterBase<T>::getParam("b", b_)) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "TransferFunctionFilter, \"%s\", params has no attribute b.",
       FilterBase<T>::getName().c_str());
     return false;
@@ -284,7 +284,7 @@ bool MultiChannelTransferFunctionFilter<T>::configure()
 
   // Prevent divide by zero while normalizing coeffs.
   if (a_[0] == 0.) {
-    RCLCPP_ERROR(this->logging_interface_->get_logger(), "a[0] can not equal 0.");
+    RCLCPP_ERROR(this->node_->get_logger(), "a[0] can not equal 0.");
     return false;
   }
 
@@ -310,7 +310,7 @@ bool MultiChannelTransferFunctionFilter<T>::update(
   // Ensure the correct number of inputs
   if (data_in.size() != this->number_of_channels_ || data_out.size() != this->number_of_channels_) {
     RCLCPP_ERROR(
-      this->logging_interface_->get_logger(),
+      this->node_->get_logger(),
       "Number of channels is %d, but data_in.size() = %ld and data_out.size() = %ld. "
       "They must match", this->number_of_channels_, data_in.size(), data_out.size());
     return false;

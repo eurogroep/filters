@@ -72,7 +72,7 @@ TEST_F(ChainTest, multi_channel_configuring) {
   ASSERT_TRUE(
     chain.configure(
       5, "MultiChannelMeanFilterDouble5",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   double input1[] = {1., 2., 3., 4., 5.};
   double input1a[] = {9., 9., 9., 9., 9.};  // seed w/incorrect values
@@ -101,8 +101,7 @@ TEST_F(ChainTest, configuring) {
 
   ASSERT_TRUE(
     chain.configure(
-      "MeanFilterFloat5", node->get_node_logging_interface(),
-      node->get_node_parameters_interface()));
+      "MeanFilterFloat5", node));
 
   float v1 = 1.;
   float v1a = 9.;
@@ -132,7 +131,7 @@ TEST_F(ChainTest, MisconfiguredNumberOfChannels) {
   ASSERT_TRUE(
     chain.configure(
       10, "MultiChannelMedianFilterDouble5",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   double input1[] = {1., 2., 3., 4., 5.};
   double input1a[] = {1., 2., 3., 4., 5.};
@@ -162,7 +161,7 @@ TEST_F(ChainTest, MultiChannelTwoFilters) {
   ASSERT_TRUE(
     chain.configure(
       5, "TwoFilters",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   double input1[] = {1., 2., 3., 4., 5.};
   double input1a[] = {9., 9., 9., 9., 9.};  // seed w/incorrect values
@@ -201,7 +200,7 @@ TEST_F(ChainTest, TransferFunction) {
   ASSERT_TRUE(
     chain.configure(
       3, "TransferFunction",
-      node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      node));
 
   std::vector<double> in1, in2, in3, in4, in5, in6, in7;
   std::vector<double> out1;
@@ -269,14 +268,14 @@ TEST_F(ChainTest, ReconfiguringChain) {
 
   ASSERT_TRUE(
     chain.configure(
-      "OneIncrements", node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      "OneIncrements", node));
   EXPECT_TRUE(chain.update(v1, v1a));
   EXPECT_EQ(2, v1a);
   chain.clear();
 
   ASSERT_TRUE(
     chain.configure(
-      "TwoIncrements", node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      "TwoIncrements", node));
   EXPECT_TRUE(chain.update(v1, v1a));
   EXPECT_EQ(3, v1a);
 }
@@ -297,8 +296,7 @@ TEST_F(ChainTest, ThreeIncrementChains) {
 
   ASSERT_TRUE(
     chain.configure(
-      "ThreeIncrements", node->get_node_logging_interface(),
-      node->get_node_parameters_interface()));
+      "ThreeIncrements", node));
   EXPECT_TRUE(chain.update(v1, v1a));
   EXPECT_EQ(4, v1a);
 }
@@ -333,7 +331,7 @@ TEST_F(ChainTest, TenIncrementChains) {
 
   ASSERT_TRUE(
     chain.configure(
-      "TenIncrements", node->get_node_logging_interface(), node->get_node_parameters_interface()));
+      "TenIncrements", node));
   EXPECT_TRUE(chain.update(v1, v1a));
   EXPECT_EQ(11, v1a);
 }
@@ -391,8 +389,7 @@ TEST_F(ChainTest, TenMultiChannelIncrementChains) {
 
   ASSERT_TRUE(
     chain.configure(
-      3, "TenMultiChannelIncrements", node->get_node_logging_interface(),
-      node->get_node_parameters_interface()));
+      3, "TenMultiChannelIncrements", node));
   EXPECT_TRUE(chain.update(v1, v1a));
   for (size_t i = 0; i < 3; ++i) {
     EXPECT_EQ(11, v1a[i]);

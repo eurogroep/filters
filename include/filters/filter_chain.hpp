@@ -62,8 +62,7 @@ struct FoundFilter
 inline bool
 load_chain_config(
   const std::string & param_prefix,
-  const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logger,
-  const rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node_params,
+  const rclcpp::Node::SharedPtr & node,
   std::vector<struct FoundFilter> & found_filters)
 {
   // TODO(sloretz) error if someone tries to do filter0
@@ -84,21 +83,21 @@ load_chain_config(
     type_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
     type_desc.read_only = false;
 
-    node_params->declare_parameter(name_desc.name);
-    node_params->declare_parameter(type_desc.name);
+    node->declare_parameter(name_desc.name);
+    node->declare_parameter(type_desc.name);
 
     rclcpp::Parameter param_name;
     rclcpp::Parameter param_type;
 
-    const bool got_name = node_params->get_parameter(name_desc.name, param_name);
-    const bool got_type = node_params->get_parameter(type_desc.name, param_type);
+    const bool got_name = node->get_parameter(name_desc.name, param_name);
+    const bool got_type = node->get_parameter(type_desc.name, param_type);
 
     if (!got_name && !got_type) {
       // Reached end of chain
       break;
     } else if (got_name != got_type) {
       RCLCPP_FATAL(
-        node_logger->get_logger(),
+        node->get_logger(),
         "%s and %s are required", name_desc.name.c_str(), type_desc.name.c_str());
       return false;
     }
@@ -106,13 +105,13 @@ load_chain_config(
     // Make sure 'name' and 'type' are strings
     if (rclcpp::PARAMETER_STRING != param_name.get_type()) {
       RCLCPP_FATAL(
-        node_logger->get_logger(),
+        node->get_logger(),
         "%s must be a string", name_desc.name.c_str());
       return false;
     }
     if (rclcpp::PARAMETER_STRING != param_type.get_type()) {
       RCLCPP_FATAL(
-        node_logger->get_logger(),
+        node->get_logger(),
         "%s must be a string", type_desc.name.c_str());
       return false;
     }
@@ -125,7 +124,7 @@ load_chain_config(
     for (const auto & filter : found_filters) {
       if (found_filter.name == filter.name) {
         RCLCPP_FATAL(
-          node_logger->get_logger(),
+          node->get_logger(),
           "A filter with the name %s already exists", filter.name.c_str());
         return false;
       }
@@ -134,7 +133,7 @@ load_chain_config(
     // Make sure 'type' is formated as 'package_name/filtername'
     if (1 != std::count(found_filter.type.cbegin(), found_filter.type.cend(), '/')) {
       RCLCPP_FATAL(
-        node_logger->get_logger(),
+        node->get_logger(),
         "%s must be of form <package_name>/<filter_name>", found_filter.type.c_str());
       return false;
     }
@@ -142,16 +141,6 @@ load_chain_config(
     // Seems ok; store it for now; it will be loaded further down.
     found_filter.param_prefix = norm_param_prefix + filter_n + ".params";
     found_filters.push_back(found_filter);
-
-    // Redeclare 'name' and 'type' as read_only
-    node_params->undeclare_parameter(name_desc.name);
-    node_params->undeclare_parameter(type_desc.name);
-    name_desc.read_only = true;
-    type_desc.read_only = true;
-    node_params->declare_parameter(
-      name_desc.name, rclcpp::ParameterValue(found_filter.name), name_desc);
-    node_params->declare_parameter(
-      type_desc.name, rclcpp::ParameterValue(found_filter.type), type_desc);
   }
   return true;
 }
@@ -229,29 +218,25 @@ public:
   /**
    * \brief Configure the filter chain and all filters which have been addedj
    * \param param_prefix The parameter name prefix of the filter chain to load
-   * \param node_logger node logging interface to use
-   * \param node_params node parameter interface to use
+   * \param node node pointer to use
    */
   bool configure(
     const std::string & param_prefix,
-    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logger,
-    const rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node_params)
+    const rclcpp::Node::SharedPtr & node)
   {
+    node_ = node;
     if (configured_) {
-      RCLCPP_ERROR(logging_interface_->get_logger(), "Filter chain is already configured");
+      RCLCPP_ERROR(node_->get_logger(), "Filter chain is already configured");
       return false;
     }
-    logging_interface_ = node_logger;
-    params_interface_ = node_params;
 
     std::vector<struct impl::FoundFilter> found_filters;
     if (!impl::load_chain_config(
-        param_prefix, logging_interface_, params_interface_, found_filters))
+        param_prefix, node_, found_filters))
     {
       // Assume load_chain_config() console logged something sensible
       return false;
     }
-
     std::vector<pluginlib::UniquePtr<filters::FilterBase<T>>> loaded_filters;
     for (const auto & filter : found_filters) {
       // Try to load the filters that were described by parameters
@@ -260,33 +245,60 @@ public:
         loaded_filter = loader_.createUniqueInstance(filter.type);
       } catch (const pluginlib::LibraryLoadException & e) {
         RCLCPP_FATAL(
-          logging_interface_->get_logger(),
+          node_->get_logger(),
           "Could not load library for %s: %s", filter.type.c_str(), e.what());
         return false;
       } catch (const pluginlib::CreateClassException & e) {
         RCLCPP_FATAL(
-          logging_interface_->get_logger(),
+          node_->get_logger(),
           "Could not construct class %s: %s", filter.type.c_str(), e.what());
         return false;
       }
-
       // Try to configure the filter
       if (!loaded_filter || !loaded_filter->configure(
-          filter.param_prefix, filter.name, logging_interface_, params_interface_))
+          filter.param_prefix, filter.name, node_))
       {
         RCLCPP_FATAL(
-          logging_interface_->get_logger(),
+          node_->get_logger(),
           "Could not configure %s of type %s", filter.name.c_str(), filter.type.c_str());
         return false;
       }
       loaded_filters.emplace_back(std::move(loaded_filter));
     }
-
     // Everything went ok!
     reference_pointers_ = std::move(loaded_filters);
+    on_set_parameters_callback_handle_ = node_->add_on_set_parameters_callback(
+             std::bind(&FilterChain::reconfigureCB, this, std::placeholders::_1));
     configured_ = true;
     return true;
   }
+
+  rcl_interfaces::msg::SetParametersResult reconfigureCB(std::vector<rclcpp::Parameter> parameters)
+  {
+    auto result = rcl_interfaces::msg::SetParametersResult();
+    result.successful = true;
+
+    for(int i=0; i!=reference_pointers_.size(); i++)
+    {
+      std::vector<rclcpp::Parameter> parameters_subset;
+      for(auto parameter : parameters)
+      {
+         if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) != std::string::npos) 
+         {
+          parameters_subset.push_back(parameter);
+         }
+      }
+      if(parameters_subset.size()>0)
+      {
+        if(!reference_pointers_[i]->reconfigureCB(parameters_subset).successful)
+        {
+          result.successful = false;
+        }
+      }
+    }
+    return result;
+  }
+
 
 private:
   pluginlib::ClassLoader<filters::FilterBase<T>> loader_;
@@ -298,8 +310,8 @@ private:
   T buffer1_;  ///< A temporary intermediate buffer
   bool configured_;  ///< whether the system is configured
 
-  rclcpp::node_interfaces::NodeParametersInterface::SharedPtr params_interface_;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
+  rclcpp::Node::SharedPtr node_;
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr on_set_parameters_callback_handle_;
 };
 
 /**
@@ -383,19 +395,17 @@ public:
   bool configure(
     size_t number_of_channels,
     const std::string & param_prefix,
-    const rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr & node_logger,
-    const rclcpp::node_interfaces::NodeParametersInterface::SharedPtr & node_params)
+    const rclcpp::Node::SharedPtr & node)
   {
+    node_ = node;
     if (configured_) {
-      RCLCPP_ERROR(logging_interface_->get_logger(), "Filter chain is already configured");
+      RCLCPP_ERROR(node_->get_logger(), "Filter chain is already configured");
       return false;
     }
-    logging_interface_ = node_logger;
-    params_interface_ = node_params;
 
     std::vector<impl::FoundFilter> found_filters;
     if (!impl::load_chain_config(
-        param_prefix, logging_interface_, params_interface_, found_filters))
+        param_prefix, node_, found_filters))
     {
       // Assume load_chain_config() console logged something sensible
       return false;
@@ -409,23 +419,22 @@ public:
         loaded_filter = loader_.createUniqueInstance(filter.type);
       } catch (const pluginlib::LibraryLoadException & e) {
         RCLCPP_FATAL(
-          logging_interface_->get_logger(),
+          node_->get_logger(),
           "Could not load library for %s: %s", filter.type.c_str(), e.what());
         return false;
       } catch (const pluginlib::CreateClassException & e) {
         RCLCPP_FATAL(
-          logging_interface_->get_logger(),
+          node_->get_logger(),
           "Could not construct class %s: %s", filter.type.c_str(), e.what());
         return false;
       }
 
       // Try to configure the filter
       if (!loaded_filter || !loaded_filter->configure(
-          number_of_channels, filter.param_prefix, filter.name,
-          logging_interface_, params_interface_))
+          number_of_channels, filter.param_prefix, filter.name, node_))
       {
         RCLCPP_FATAL(
-          logging_interface_->get_logger(),
+          node_->get_logger(),
           "Could not configure %s of type %s", filter.name.c_str(), filter.type.c_str());
         return false;
       }
@@ -441,6 +450,33 @@ public:
     return true;
   }
 
+  rcl_interfaces::msg::SetParametersResult reconfigureCB(std::vector<rclcpp::Parameter> parameters)
+  {
+    auto result = rcl_interfaces::msg::SetParametersResult();
+    result.successful = true;
+
+    for(int i=0; i!=reference_pointers_.size(); i++)
+    {
+      std::vector<rclcpp::Parameter> parameters_subset;
+      for(auto parameter : parameters)
+      {
+        RCLCPP_WARN_STREAM(node_->get_logger(), "SETTING PARAMETER "<<parameter.get_name());
+        if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) != std::string::npos) 
+        {
+          parameters_subset.push_back(parameter);
+        }
+      }
+      if(parameters_subset.size()>0)
+      {
+        if(!reference_pointers_[i]->reconfigureCB(parameters_subset).successful)
+        {
+          result.successful = false;
+        }
+      }
+    }
+    return result;
+  }
+
 private:
   pluginlib::ClassLoader<filters::MultiChannelFilterBase<T>> loader_;
 
@@ -451,8 +487,7 @@ private:
   std::vector<T> buffer1_;  ///< A temporary intermediate buffer
   bool configured_;  ///< whether the system is configured
 
-  rclcpp::node_interfaces::NodeParametersInterface::SharedPtr params_interface_;
-  rclcpp::node_interfaces::NodeLoggingInterface::SharedPtr logging_interface_;
+  rclcpp::Node::SharedPtr node_;
 };
 
 }  // namespace filters
