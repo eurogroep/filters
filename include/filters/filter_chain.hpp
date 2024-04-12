@@ -78,13 +78,16 @@ load_chain_config(
     name_desc.name = norm_param_prefix + filter_n + ".name";
     name_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
     name_desc.read_only = false;
+
     rcl_interfaces::msg::ParameterDescriptor type_desc;
     type_desc.name = norm_param_prefix + filter_n + ".type";
     type_desc.type = rcl_interfaces::msg::ParameterType::PARAMETER_STRING;
     type_desc.read_only = false;
 
-    node->declare_parameter(name_desc.name);
-    node->declare_parameter(type_desc.name);
+    node->declare_parameter(
+      name_desc.name, rclcpp::ParameterValue(), name_desc);
+    node->declare_parameter(
+      type_desc.name, rclcpp::ParameterValue(), type_desc);
 
     rclcpp::Parameter param_name;
     rclcpp::Parameter param_type;
