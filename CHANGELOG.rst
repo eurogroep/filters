@@ -1,10 +1,6 @@
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Changelog for package filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-2.1.0 (2020-05-14)
-------------------
-* node interface for parameter reconfigure (`https://dev.azure.com/Eurogroep/Eurotec/_workitems/edit/34515`_)
-* Contributors: Berend Kupers
 
 2.0.2 (2021-07-13)
 ------------------
