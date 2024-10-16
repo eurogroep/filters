@@ -2,6 +2,16 @@
 Changelog for package filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Forthcoming
+-----------
+* Merge commit 'bd27bab12ecc03e5dc1b8bdda6c1de0950773448' into humble
+* solve dynamic typing runtime error
+* changed parameter declaration to build in foxy and bhumble
+* feat(filters): node interface for parameter reconfigure (`#1 <https://github.com/eurogroep/filters/issues/1>`_)
+  * Added pointer to node
+  * Added reconfigure callbacks
+* Contributors: Jeanine van Bruggen, berend-kupers
+
 2.0.2 (2021-07-13)
 ------------------
 * Solve statically parameter error (`#48 <https://github.com/ros/filters/issues/48>`_)
