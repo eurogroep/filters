@@ -2,7 +2,7 @@
 Changelog for package filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Forthcoming
+4.0.0 (2024-10-16)
 -----------
 * Merge commit 'bd27bab12ecc03e5dc1b8bdda6c1de0950773448' into humble
 * solve dynamic typing runtime error
