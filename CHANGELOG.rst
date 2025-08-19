@@ -2,6 +2,13 @@
 Changelog for package filters
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+4.0.1 (2025-08-19)
+------------------
+
+Fix
+~~~
+- Lint uncrustify. [Yannick de Hoop]
+
 4.0.0 (2024-10-16)
 -----------
 * Merge commit 'bd27bab12ecc03e5dc1b8bdda6c1de0950773448' into humble
