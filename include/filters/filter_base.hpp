@@ -109,12 +109,13 @@ public:
    */
   virtual bool update(const T & data_in, T & data_out) = 0;
 
-  virtual rcl_interfaces::msg::SetParametersResult reconfigureCB(std::vector<rclcpp::Parameter> parameters) 
+  virtual rcl_interfaces::msg::SetParametersResult reconfigureCB(
+    std::vector<rclcpp::Parameter> parameters)
   {
     auto result = rcl_interfaces::msg::SetParametersResult();
     result.successful = true;
     return result;
-  };
+  }
 
   /**
    * \brief Get the name of the filter as a string
@@ -125,7 +126,6 @@ public:
    * \brief Get the parameter_prefix of the filter as a string
    */
   inline const std::string & getParamPrefix() {return param_prefix_;}
-
 
 private:
   template<typename PT>

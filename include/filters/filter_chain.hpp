@@ -277,7 +277,7 @@ public:
     // Everything went ok!
     reference_pointers_ = std::move(loaded_filters);
     on_set_parameters_callback_handle_ = node_->add_on_set_parameters_callback(
-             std::bind(&FilterChain::reconfigureCB, this, std::placeholders::_1));
+      std::bind(&FilterChain::reconfigureCB, this, std::placeholders::_1));
     configured_ = true;
     return true;
   }
@@ -287,27 +287,23 @@ public:
     auto result = rcl_interfaces::msg::SetParametersResult();
     result.successful = true;
 
-    for(int i=0; i!=reference_pointers_.size(); i++)
-    {
+    for (int i = 0; i != reference_pointers_.size(); i++) {
       std::vector<rclcpp::Parameter> parameters_subset;
-      for(auto parameter : parameters)
-      {
-         if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) != std::string::npos) 
-         {
-          parameters_subset.push_back(parameter);
-         }
-      }
-      if(parameters_subset.size()>0)
-      {
-        if(!reference_pointers_[i]->reconfigureCB(parameters_subset).successful)
+      for (auto parameter : parameters) {
+        if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) !=
+          std::string::npos)
         {
+          parameters_subset.push_back(parameter);
+        }
+      }
+      if (parameters_subset.size() > 0) {
+        if (!reference_pointers_[i]->reconfigureCB(parameters_subset).successful) {
           result.successful = false;
         }
       }
     }
     return result;
   }
-
 
 private:
   pluginlib::ClassLoader<filters::FilterBase<T>> loader_;
@@ -320,7 +316,8 @@ private:
   bool configured_;  ///< whether the system is configured
 
   rclcpp::Node::SharedPtr node_;
-  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr on_set_parameters_callback_handle_;
+  rclcpp::node_interfaces::OnSetParametersCallbackHandle::SharedPtr
+    on_set_parameters_callback_handle_;
 };
 
 /**
@@ -464,21 +461,18 @@ public:
     auto result = rcl_interfaces::msg::SetParametersResult();
     result.successful = true;
 
-    for(int i=0; i!=reference_pointers_.size(); i++)
-    {
+    for (int i = 0; i != reference_pointers_.size(); i++) {
       std::vector<rclcpp::Parameter> parameters_subset;
-      for(auto parameter : parameters)
-      {
-        RCLCPP_WARN_STREAM(node_->get_logger(), "SETTING PARAMETER "<<parameter.get_name());
-        if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) != std::string::npos) 
+      for (auto parameter : parameters) {
+        RCLCPP_WARN_STREAM(node_->get_logger(), "SETTING PARAMETER " << parameter.get_name());
+        if (parameter.get_name().find(reference_pointers_[i]->getParamPrefix()) !=
+          std::string::npos)
         {
           parameters_subset.push_back(parameter);
         }
       }
-      if(parameters_subset.size()>0)
-      {
-        if(!reference_pointers_[i]->reconfigureCB(parameters_subset).successful)
-        {
+      if (parameters_subset.size() > 0) {
+        if (!reference_pointers_[i]->reconfigureCB(parameters_subset).successful) {
           result.successful = false;
         }
       }
